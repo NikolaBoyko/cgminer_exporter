@@ -148,15 +148,18 @@ def metric_stats(data, tags):
     local_tags = '%s' % tags
     for entry in stat_data:
         if 'temp' in entry:
-            temp_num = entry.replace("temp", "")
-            value = stat_data[entry]
-            if value == "-":
-                value = 0
-            elif isinstance(value, str):
-                value_list = value.split('-')
-                value_list = [int(i) for i in value_list]
-                value = max(value_list)
-            string += 'cgminer_stats_temp{temp="%s",%s} %s\n' % (temp_num, local_tags, value)
+            if 'temp_num' in entry:
+                string += 'cgminer_temp_sensor_count{%s} %s\n' % (local_tags, stat_data[entry])
+            else:
+                temp_num = entry.replace("temp", "")
+                value = stat_data[entry]
+                if value == "-":
+                    value = 0
+                elif isinstance(value, str):
+                    value_list = value.split('-')
+                    value_list = [int(i) for i in value_list]
+                    value = max(value_list)
+                string += 'cgminer_stats_temp{temp="%s",%s} %s\n' % (temp_num, local_tags, value)
         if 'chain_hw' in entry:
             chain_num = entry.replace("chain_hw", "")
             if stat_data['chain_rate%s' % chain_num]:
@@ -169,14 +172,20 @@ def metric_stats(data, tags):
             string += 'cgminer_stats_chain_hw{chain="%s",%s} %s\n' % (
                 chain_num, local_tags, stat_data['chain_hw%s' % chain_num])
         if 'fan' in entry:
-            fan_num = entry.replace("fan", "")
-            string += 'cgminer_stats_fan{fan="%s",%s} %s\n' % (fan_num, local_tags, stat_data['fan%s' % fan_num])
+            if 'fan_num' in entry:
+                string += 'cgminer_fan_count{%s} %s\n' % (local_tags, stat_data[entry])
+            elif 'fan_pwm' in entry:
+                string += 'cgminer_fan_pwm{%s} %s\n' % (local_tags, stat_data[entry])
+            else:
+                fan_num = entry.replace("fan", "")
+                string += 'cgminer_stats_fan{fan="%s",%s} %s\n' % (fan_num, local_tags, stat_data['fan%s' % fan_num])
         if 'freq_avg' in entry:
             freq_num = entry.replace("freq_avg", "")
             string += 'cgminer_stats_freq{freq="%s",%s} %s\n' % (freq_num, local_tags,
                                                                  stat_data['freq_avg%s' % freq_num])
 
-    string += 'cgminer_stats_frequency{%s} %s\n' % (local_tags, stat_data['frequency'])
+    if stat_data['frequency'] != '':
+        string += 'cgminer_stats_frequency{%s} %s\n' % (local_tags, stat_data['frequency'])
 
     return string
 
