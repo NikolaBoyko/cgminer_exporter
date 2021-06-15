@@ -150,6 +150,8 @@ def metric_stats(data, tags):
         if 'temp' in entry:
             if 'temp_num' in entry:
                 string += 'cgminer_temp_sensor_count{%s} %s\n' % (local_tags, stat_data[entry])
+            if 'temp_max' in entry:
+                string += 'cgminer_temp_max{%s} %s\n' % (local_tags, stat_data[entry])
             else:
                 temp_num = entry.replace("temp", "")
                 value = stat_data[entry]
@@ -167,8 +169,11 @@ def metric_stats(data, tags):
                     chain_num, local_tags, stat_data['chain_rate%s' % chain_num])
             else:
                 string += 'cgminer_stats_chain_rate{chain="%s",%s} %s\n' % (chain_num, local_tags, 0)
-            string += 'cgminer_stats_chain_acn{chain="%s",%s} %s\n' % (
+            string += 'cgminer_stats_chain_asic_chip_number{chain="%s",%s} %s\n' % (
                 chain_num, local_tags, stat_data['chain_acn%s' % chain_num])
+            asic_chip_status_ok_count = stat_data['chain_acs%s' % chain_num]
+            string += 'cgminer_stats_chain_asic_chip_status_ok_count{chain="%s",%s} %s\n' % (
+                chain_num, local_tags, asic_chip_status_ok_count.count('o'))
             string += 'cgminer_stats_chain_hw{chain="%s",%s} %s\n' % (
                 chain_num, local_tags, stat_data['chain_hw%s' % chain_num])
         if 'fan' in entry:
@@ -178,12 +183,20 @@ def metric_stats(data, tags):
                 string += 'cgminer_fan_pwm{%s} %s\n' % (local_tags, stat_data[entry])
             else:
                 fan_num = entry.replace("fan", "")
-                string += 'cgminer_stats_fan{fan="%s",%s} %s\n' % (fan_num, local_tags, stat_data['fan%s' % fan_num])
+                string += 'cgminer_stats_fan{fan="%s",%s} %s\n' % (fan_num, local_tags, stat_data[entry])
         if 'freq_avg' in entry:
             freq_num = entry.replace("freq_avg", "")
             string += 'cgminer_stats_freq{freq="%s",%s} %s\n' % (freq_num, local_tags,
-                                                                 stat_data['freq_avg%s' % freq_num])
+                                                                 stat_data[entry])
 
+    if stat_data['total_rateideal'] != '':
+        string += 'cgminer_stats_total_rate_ideal{%s} %s\n' % (local_tags, stat_data['total_rateideal'])
+    total_rate_key= 'total_rate'
+    if 'total rate' in stat_data.keys():
+        total_rate_key = 'total rate'
+    string += 'cgminer_stats_total_rate{%s} %s\n' % (local_tags, stat_data[total_rate_key])
+    if stat_data['total_acn'] != '':
+        string += 'cgminer_stats_total_asic_chip_number{%s} %s\n' % (local_tags, stat_data['total_acn'])
     if stat_data['frequency'] != '':
         string += 'cgminer_stats_frequency{%s} %s\n' % (local_tags, stat_data['frequency'])
 
