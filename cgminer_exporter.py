@@ -150,7 +150,9 @@ def metric_stats(data, tags):
         if 'temp' in entry:
             temp_num = entry.replace("temp", "")
             value = stat_data[entry]
-            if isinstance(value, str):
+            if value == "-":
+                value = 0
+            elif isinstance(value, str):
                 value_list = value.split('-')
                 value_list = [int(i) for i in value_list]
                 value = max(value_list)
